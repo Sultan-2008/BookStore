@@ -4,11 +4,6 @@ import { useForm } from 'react-hook-form';
 
 function Login() {
   const navigate = useNavigate();
-  
-   // Handle the close button click to navigate to the home page
-   const handleClose = () => {
-    navigate('/'); // Redirects to the home page
-  };
 
   const {
     register,
@@ -16,16 +11,38 @@ function Login() {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // Add your login logic here (e.g., API call)
+  // Make onSubmit async to use await inside it
+  const onSubmit = async (data) => {
+    try {
+      // Use async-await for fetch
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log('Login successful', result);
+        // Handle successful login, redirect, or save token
+        navigate('/dashboard'); // Redirect to the dashboard after login
+      } else {
+        console.error('Login failed', result);
+        // Handle login failure (e.g., display error message)
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+      // Handle network or other errors
+    }
   };
 
   // Adding animation to the login button when clicked
   const handleLoginClick = (event) => {
-    event.target.classList.add('button-click-animation');
+    const button = event.target;
+    button.classList.add('button-click-animation');
     setTimeout(() => {
-      event.target.classList.remove('button-click-animation');
+      button.classList.remove('button-click-animation');
     }, 500);
   };
 
@@ -37,95 +54,42 @@ function Login() {
             <button
               type="button"
               className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-              onClick={handleClose}>
+            >
               ✕
             </button>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                maxWidth: '400px',
-                margin: 'auto',
-                padding: '20px',
-                borderRadius: '8px',
-                background: '#f9f9f9',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                transition: 'background 0.3s ease',
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: '1.5rem',
-                  color: '#333',
-                  marginBottom: '1rem',
-                  fontWeight: 'bold',
-                }}
-              >
-                Login Here!
-              </h3>
-              <label style={{ fontSize: '0.9rem', color: '#555', marginBottom: '0.5rem' }}>
-                Email Id:
-              </label>
+            <div className="login-form-container">
+              <h3 className="text-2xl font-bold mb-4">Login Here!</h3>
+              <label className="block text-sm mb-2">Email Id:</label>
               <input
                 type="email"
-                name="email"
-                placeholder="Danish@gmail.com"
+                placeholder="abc@gmail.com"
                 required
-                style={{
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  background: '#fff',
-                  boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.1)',
-                  marginBottom: '1rem',
-                  fontSize: '1rem',
-                  width: '100%',
-                }}
+                className="input-field"
                 {...register('email', { required: 'Email is required' })}
               />
-              {errors.email && <span style={{ color: 'red' }}>{errors.email.message}</span>}
+              {errors.email && <span className="text-red-600">{errors.email.message}</span>}
 
-              <label style={{ fontSize: '0.9rem', color: '#555', marginBottom: '0.5rem' }}>
-                Password:
-              </label>
+              <label className="block text-sm mb-2">Password:</label>
               <input
                 type="password"
-                name="password"
                 placeholder="*****"
                 required
-                style={{
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  background: '#fff',
-                  boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.1)',
-                  marginBottom: '1rem',
-                  fontSize: '1rem',
-                  width: '100%',
-                }}
+                className="input-field"
                 {...register('password', { required: 'Password is required' })}
               />
-              {errors.password && <span style={{ color: 'red' }}>{errors.password.message}</span>}
+              {errors.password && <span className="text-red-600">{errors.password.message}</span>}
 
-              <div className="flex justify-around mt-4">
+              <div className="flex justify-between mt-4">
                 <button
                   type="submit"
-                  className="btn-primary hover:bg-green-900 duration-200"
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    borderRadius: '4px',
-                    fontSize: '1rem',
-                    fontWeight: 'bold',
-                    background: '#337ab7',
-                    color: '#fff',
-                  }}
+                  className="btn-primary"
                   onClick={handleLoginClick}
                 >
                   Login
                 </button>
                 <p>
                   Not Registered?{' '}
-                  <Link to="/Signup" className="underline cursor-pointer text-xl text-blue-800">
+                  <Link to="/Signup" className="underline text-blue-800">
                     Signup
                   </Link>
                 </p>
@@ -136,12 +100,51 @@ function Login() {
       </dialog>
 
       {/* Add the CSS for the button-click-animation */}
-      <style jsx>{`
-        .button-click-animation {
-          transform: scale(0.9);
-          transition: transform 0.1s ease-in-out;
-        }
-      `}</style>
+      <style>
+        {`
+          .button-click-animation {
+            transform: scale(0.9);
+            transition: transform 0.1s ease-in-out;
+          }
+
+          .login-form-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f9f9f9;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s ease;
+          }
+
+          .input-field {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fff;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            width: 100%;
+          }
+
+          .btn-primary {
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            background: #337ab7;
+            color: #fff;
+            transition: background 0.2s ease;
+          }
+
+          .btn-primary:hover {
+            background: #286090;
+          }
+        `}
+      </style>
     </>
   );
 }

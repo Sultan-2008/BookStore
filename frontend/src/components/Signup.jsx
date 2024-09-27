@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
+import axios from 'axios';
 
 function Signup() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    fullName: '',
+    name: '',
     email: '',
-    password: '',
-    confirmPassword: ''
+    password: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -28,18 +27,32 @@ function Signup() {
   };
 
   // Function to handle form submission
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
-      // Log the form data to the console
-      console.log('Form Data:', formData);
-      // Handle signup logic here (e.g., API call to create account)
-      // After successful signup, redirect to the login page
-      navigate('/');
-     
+      try {
+        const response = await axios.post("http://localhost:4001/user/signup", formData);
+        console.log(response);
+        if (response.data) {
+          alert('User registered successfully');
+          navigate('/login'); // Redirect after successful registration
+
+          // Store response data in localStorage (stringify the data)
+          localStorage.setItem('userData', JSON.stringify(response.data));
+        }
+       
+      }catch (error) {
+        if (error.response && error.response.data) {
+          console.error('Error:', error.response.data.message);
+          alert('Already Exist User: ' + error.response.data.message);
+        } else {
+          console.error('Error:', error.message);
+          alert('An unexpected error occurred');
+        }
+      }
     }
   };
 
@@ -48,8 +61,8 @@ function Signup() {
     const errors = {};
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-    if (!formData.fullName) {
-      errors.fullName = 'Full Name is required';
+    if (!formData.name) {
+      errors.name = 'Name is required';
     }
 
     if (!formData.email) {
@@ -62,10 +75,6 @@ function Signup() {
       errors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       errors.password = 'Password must be at least 8 characters long';
-    }
-
-    if (formData.confirmPassword !== formData.password) {
-      errors.confirmPassword = 'Passwords do not match';
     }
 
     return errors;
@@ -88,14 +97,14 @@ function Signup() {
             Full Name:
             <input
               type="text"
-              name="fullName"
+              name="name"
               placeholder="Dar Danish"
               style={styles.input}
-              value={formData.fullName}
+              value={formData.name} // Use formData.name here
               onChange={handleChange}
               required
             />
-            {errors.fullName && <p style={styles.error}>{errors.fullName}</p>}
+            {errors.name && <p style={styles.error}>{errors.name}</p>}
           </label>
           <label style={styles.label}>
             Email Address:
@@ -123,19 +132,7 @@ function Signup() {
             />
             {errors.password && <p style={styles.error}>{errors.password}</p>}
           </label>
-          <label style={styles.label}>
-            Confirm Password:
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="********"
-              style={styles.input}
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-            />
-            {errors.confirmPassword && <p style={styles.error}>{errors.confirmPassword}</p>}
-          </label>
+          
           <button type="submit" style={styles.button}>Sign Up</button>
         </form>
         <p style={styles.footer}>
